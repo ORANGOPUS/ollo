@@ -25,6 +25,11 @@ ollo is a customisable page for your social media content. Open-source & 100% fr
 
 ## Getting started
 
+Requires **Node.js 22+** (`.nvmrc`/`.node-version` are provided) — Supabase's
+realtime client needs the native `WebSocket` global that Node only ships by
+default from v22 onward, and it's constructed on every Supabase client, not
+just realtime features.
+
 Install dependencies:
 
 ```bash
