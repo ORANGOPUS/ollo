@@ -39,13 +39,23 @@ npm install
 Create a `.env` file in the project root with the variables your setup needs, for example:
 
 ```bash
-DATABASE_URL=
+DATABASE_URL=   # Supabase connection pooler (port 6543), with ?pgbouncer=true
+DIRECT_URL=     # Supabase direct connection (port 5432), used for migrations
 SUPABASE_URL=
 SUPABASE_KEY=
 SPOTIFY_CLIENT_ID=
 SPOTIFY_CLIENT_SECRET=
 SPOTIFY_REFRESH_TOKEN=
 ```
+
+> On Vercel (or any serverless host), `DATABASE_URL` **must** point at
+> Supabase's pooled connection string (Settings → Database → Connection
+> pooling, port `6543`, with `?pgbouncer=true` appended), not the direct
+> connection. Every server route creates its own `PrismaClient`, and
+> serverless functions opening direct Postgres connections at scale will
+> exhaust Supabase's connection limit — new connections then hang instead
+> of failing fast, which surfaces as a Vercel function timeout rather than
+> a clear error. `DIRECT_URL` is only used by Prisma for migrations.
 
 Start the dev server:
 
