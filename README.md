@@ -56,6 +56,11 @@ npm run generate  # generate a static site
 npm run preview   # preview the production build
 ```
 
+## Architecture
+
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for how the pages, server API,
+database, and third-party services fit together.
+
 ## License
 
 [MIT](./LICENSE)
