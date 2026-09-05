@@ -77,7 +77,7 @@ const profile = user.value ? profiles.find((profile) => profile.id === user.valu
 async function getProfiles() {
   if (user) {
     try {
-      return await $fetch('/api/profiles')
+      return await $fetch('/api/profiles', { timeout: 5000 })
     } catch (error) {
       console.error('Error fetching profiles:', error)
       return []
