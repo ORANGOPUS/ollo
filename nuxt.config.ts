@@ -2,12 +2,6 @@
 export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ["@nuxtjs/supabase", "nuxt-icon", "@nuxt/ui", "@nuxtjs/mdc", "@nuxt/image"],
-  plugins: [
-    '~/plugins/dayjs.ts',
-    '~/plugins/pinia.ts',
-    '~/plugins/rawger.ts',
-    '~/plugins/spotify.ts',
-  ],
   css: ['/assets/css/styles.css'],
   supabase: {
     redirect: false,

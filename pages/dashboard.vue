@@ -100,7 +100,6 @@
 
 <script setup>
 import { ref, onMounted, watch, VueElement } from 'vue'
-import spotify from '~/plugins/spotify';
 import axios from 'axios';
 
 const config = useRuntimeConfig()
