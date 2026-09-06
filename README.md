@@ -22,6 +22,7 @@ ollo is a customisable page for your social media content. Open-source & 100% fr
 - [Tailwind CSS](https://tailwindcss.com/) + [Nuxt UI](https://ui.nuxt.com/)
 - [Pinia](https://pinia.vuejs.org/) for state management
 - [GetStream](https://getstream.io/) for live video and chat
+- [Capacitor](https://capacitorjs.com/) wraps the mobile UI (`pages/app/**`) as the Android app
 
 ## Getting started
 
@@ -64,7 +65,8 @@ npm run preview   # preview the production build
 ## Architecture
 
 See [ARCHITECTURE.md](./ARCHITECTURE.md) for how the pages, server API,
-database, and third-party services fit together.
+database, and third-party services fit together — including how the
+[Android app](./ARCHITECTURE.md#mobile-app-android) is built.
 
 ## License
 

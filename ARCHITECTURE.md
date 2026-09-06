@@ -34,6 +34,9 @@ File-based routing via Nuxt:
 - `dashboard.vue` — the signed-in user's own dashboard: posts, settings, account deletion
 - `[username]/live.vue` — watch a user's live stream
 - `[username]/spotify.vue` — a user's now-playing Spotify overlay
+- `app/*` — the mobile-optimised UI served to the Android app (see
+  [Mobile app](#mobile-app-android) below); reuses the same Supabase/Prisma
+  data and Pinia store as the routes above, with mobile-specific templates.
 
 ### Layouts (`layouts/`)
 
@@ -109,6 +112,38 @@ Two schemas map to Supabase's structure:
   `plugins/spotify.ts`.
 - **Canny** — public feedback board, embedded via `components/Canny.vue`.
 - **RAWG API** — game metadata for the profile "currently playing" field.
+
+## Mobile app (Android)
+
+The Android app is a [Capacitor](https://capacitorjs.com/) shell, not a
+separate codebase: `capacitor.config.ts` points its WebView straight at
+`https://ollo.bio/app/home` (overridable via `OLLO_APP_URL` for local dev),
+so the native app runs the exact same Nuxt server, Supabase session, GetStream
+calls and Spotify OAuth redirects as the website — nothing is bundled or
+statically generated for it.
+
+What's mobile-specific is the UI surface under `pages/app/**` plus
+`layouts/app.vue` and `components/app/*` (`AppTabBar`, `AppPostCard`): a
+dedicated set of templates matching the ollo Mobile App design (dark navy,
+Quicksand, pill buttons, bottom tab bar) that call the same data layer as the
+desktop pages — direct Supabase queries against `posts_with_likes` /
+`likes_with_profiles` / `reply_with_profile`, `/api/profiles` /
+`/api/socials`, and the `stores/getstream.client.ts` store — rather than a
+parallel backend.
+
+Screens without a real backing table (followers, tipping, third-party
+connections beyond Spotify/Pally) are either omitted or backed by the closest
+real field, the same way the desktop app already does for e.g. the HypeRate
+"under maintenance" state; nothing shows fabricated data.
+
+Building the Android project locally:
+
+```bash
+npm install
+npm run cap:add:android   # first time only, creates android/
+npm run cap:sync
+npm run cap:open:android  # opens Android Studio
+```
 
 ## Conventions
 
