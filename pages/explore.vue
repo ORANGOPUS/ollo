@@ -27,7 +27,7 @@
               <div class="info mt-4 center">
                 <h1 class="username center">{{ profile.username }}</h1>
                 <div>
-                  <span class="handle">{{ profile.handle }}</span>
+                  <span class="handle">@{{ profile.username }}</span>
                 </div>
                 <div v-if="profile.isLive" class="live-status">Live</div>
               </div>
