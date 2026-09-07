@@ -227,14 +227,14 @@ const startPollingCurrentlyPlaying = () => {
 
 onMounted(async () => {
   try {
-    const { data } = await supabase.from('profiles').select('*').eq('id', user.value.id).single()
+    const data = await $fetch('/api/profiles/me')
     if (data) {
       displayname.value = data.displayname
       username.value = data.username
       game.value = data.game
       bio.value = data.bio
       hyperate.value = data.hyperate
-      avatarUrl.value = data.avatar_url
+      avatarUrl.value = data.avatar
       pally.value = data.pally
       customDomain.value = data.custom_domain
       css.value = data.css
@@ -288,7 +288,7 @@ const handleAuthorizationCallback = async () => {
 
 const refreshSpotifyToken = async () => {
   try {
-    const { data } = await supabase.from('profiles').select('spotify_refresh').eq('id', user.value.id).single();
+    const data = await $fetch('/api/profiles/me');
     if (data && data.spotify_refresh) {
       const tokens = await $fetch('/api/spotify/refresh', {
         method: 'POST',

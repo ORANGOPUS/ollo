@@ -60,7 +60,7 @@ const handleChange = () => {
 };
 
 const fetchProfiles = async () => {
-  const { data, error } = await supabase.from('profiles').select('*');
+  const { data, error } = await supabase.from('profiles').select('id, username, avatar');
   if (error) {
     throw new Error(error.message);
   }
