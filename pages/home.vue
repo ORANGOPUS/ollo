@@ -73,7 +73,7 @@
       </div>
 
       <div class="flex">
-        <button class="minutesago mr-3" @click="toggleLike(post.id)">
+        <button class="minutesago mr-3" @click="toggleLike(post)">
           <Icon :name="post.liked ? 'icon-park-solid:like' : 'icon-park-outline:like'" class="mr-1" />
           {{ post.likes }}
         </button>
@@ -91,7 +91,7 @@
         <button class="minutesago mr-3" @click="toggleReplyInput(post.id)">
           reply
         </button>
-        <button v-if="post.author_id === user.id" @click="deletePost(post.id)" class="bg-red-500 text-gray-200 minutesago">
+        <button v-if="post.user_id === user.id" @click="deletePost(post.id)" class="bg-red-500 text-gray-200 minutesago">
           delete
         </button>
       </div>

@@ -101,13 +101,13 @@
         </div>
       </div>
       <div>
-        <span class="minutesago mt-6 mr-3">
-          <Like :postId="post.id" :initialLikes="post.likes" /> {{ post.likes }}
+        <span class="mt-6 mr-3">
+          <Like :postId="post.id" :initialLikes="post.likes" />
         </span>
         <button class="minutesago mr-3" @click="toggleReplyInput(post.id)">
           reply
         </button>
-        <button v-if="post.author_id === (user && user.id)" @click="deletePost(post.id)" class="bg-red-500 text-gray-200 minutesago">
+        <button v-if="post.user_id === (user && user.id)" @click="deletePost(post.id)" class="bg-red-500 text-gray-200 minutesago">
           delete
         </button>
       </div>

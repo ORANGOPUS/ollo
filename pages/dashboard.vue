@@ -73,7 +73,6 @@
       <span v-else>
         <Icon name="fa6-brands:spotify"/> Connect to Spotify
       </span>
-      <p>{{ spotifyRefreshToken }}</p>
     </button>
     </Tab>
     <Tab title="Privacy">
@@ -201,9 +200,9 @@ const updateAvatar = async (event) => {
     if (uploadError) throw uploadError;
 
     const { data: { publicUrl } } = await supabase.storage.from('uploads').getPublicUrl(filePath);
-    if (error) throw error;
 
     avatarUrl.value = publicUrl;
+    await supabase.from('profiles').update({ avatar: publicUrl }).eq('id', user.value.id);
   } catch (error) {
     console.error('Error uploading avatar:', error.message);
   }
@@ -257,39 +256,24 @@ onMounted(async () => {
   }
 });
 
-// Exchange authorization code for access and refresh tokens
+// Exchange authorization code for access and refresh tokens. The token
+// exchange itself (and the client secret it requires) happens server-side;
+// this just relays the code and stores the result the server already saved.
 const exchangeCodeForToken = async (code) => {
   try {
-    const response = await axios.post('https://accounts.spotify.com/api/token', null, {
-      params: {
-        grant_type: 'authorization_code',
-        code,
-        redirect_uri: window.location.origin + '/dashboard',
-        client_id: "f4c0d55175314b9a843c864e48b863a1",
-        client_secret: "3f30cba020ed435ea8c0dae40069f93d"
-      },
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }, 
+    return await $fetch('/api/spotify/exchange', {
+      method: 'POST',
+      body: { code, redirect_uri: window.location.origin + '/dashboard' },
     });
-    return {
-      access_token: response.data.access_token,
-      refresh_token: response.data.refresh_token
-    };
   } catch (error) {
     console.error('Error exchanging code for token:', error);
     return null;
   }
 };
 
-const saveSpotifyTokens = async (accessToken, refreshToken) => {
-  try {
-    await supabase.from('profiles').update({ spotify: accessToken, spotify_refresh: refreshToken }).eq('id', user.value.id);
-    spotifyToken.value = accessToken;
-    spotifyRefreshToken.value = refreshToken;
-  } catch (error) {
-    console.error('Error saving Spotify tokens:', error.message);
-  }
+const saveSpotifyTokens = (accessToken, refreshToken) => {
+  spotifyToken.value = accessToken;
+  spotifyRefreshToken.value = refreshToken;
 };
 
 const handleAuthorizationCallback = async () => {
@@ -297,7 +281,7 @@ const handleAuthorizationCallback = async () => {
   if (code) {
     const tokens = await exchangeCodeForToken(code);
     if (tokens) {
-      await saveSpotifyTokens(tokens.access_token, tokens.refresh_token);
+      saveSpotifyTokens(tokens.access_token, tokens.refresh_token);
     }
   }
 };
@@ -306,21 +290,13 @@ const refreshSpotifyToken = async () => {
   try {
     const { data } = await supabase.from('profiles').select('spotify_refresh').eq('id', user.value.id).single();
     if (data && data.spotify_refresh) {
-      const response = await axios.post('https://accounts.spotify.com/api/token', null, {
-        params: {
-          grant_type: 'refresh_token',
-          refresh_token: data.spotify_refresh,
-          client_id: "f4c0d55175314b9a843c864e48b863a1",
-          client_secret: "3f30cba020ed435ea8c0dae40069f93d"
-        },
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }, 
+      const tokens = await $fetch('/api/spotify/refresh', {
+        method: 'POST',
+        body: { refresh_token: data.spotify_refresh },
       });
-      const newAccessToken = response.data.access_token;
-      const newRefreshToken = response.data.refresh_token
-      await saveSpotifyTokens(newAccessToken, newRefreshToken);
-      return newAccessToken;
+      await supabase.from('profiles').update({ spotify: tokens.access_token, spotify_refresh: tokens.refresh_token }).eq('id', user.value.id);
+      saveSpotifyTokens(tokens.access_token, tokens.refresh_token);
+      return tokens.access_token;
     }
   } catch (error) {
     console.error('Error refreshing Spotify token:', error.message);
