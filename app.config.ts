@@ -1,4 +1,11 @@
 export default defineAppConfig({
+    // Used by /privacy and /terms. GDPR requires a working contact for privacy
+    // requests: set contactEmail before this ships.
+    legal: {
+      controller: "Orangopus Collective",
+      contactEmail: "",
+      lastUpdated: "9 October 2026",
+    },
     ui: {
       strategy: "override",
       primary: "cool",

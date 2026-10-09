@@ -1,0 +1,79 @@
+<svg width="1500" height="500" viewBox="0 0 1500 500" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ollo X banner: one little link, organised. ollo.bio">
+  <defs>
+    <!-- ollo mark: paths verbatim from ORANGOPUS/ollo public/logo.svg -->
+    <g id="mark-circle"><path d="M48.07 108.14C74.6183 108.14 96.14 86.6183 96.14 60.07C96.14 33.5217 74.6183 12 48.07 12C21.5217 12 0 33.5217 0 60.07C0 86.6183 21.5217 108.14 48.07 108.14Z"/></g>
+    <g id="mark-leaf"><path d="M128.94 23.996C132.952 8.88921 148.347 -0.0759104 163.325 3.97194C178.301 8.01986 187.19 23.5478 183.177 38.6546L175.91 66.008C167.884 96.2213 137.095 114.152 107.14 106.056L128.94 23.996Z"/></g>
+    <!-- new default avatar (public/avatar.svg), circle-cropped -->
+    <clipPath id="av-clip"><circle cx="250" cy="250" r="250"/></clipPath>
+    <symbol id="avatar" viewBox="0 0 500 500">
+      <g clip-path="url(#av-clip)">
+        <rect width="500" height="500" fill="#1A2235"/>
+        <g transform="translate(110 165.4) scale(1.521)">
+          <use href="#mark-circle" fill="#FFFFFF"/>
+          <use href="#mark-leaf" fill="#04D87F"/>
+        </g>
+      </g>
+    </symbol>
+    <path id="star" d="M0 -1C0.12 -0.12 0.12 -0.12 1 0C0.12 0.12 0.12 0.12 0 1C-0.12 0.12 -0.12 0.12 -1 0C-0.12 -0.12 -0.12 -0.12 0 -1Z"/>
+    <clipPath id="card-clip"><rect width="420" height="380" rx="24"/></clipPath>
+  </defs>
+
+  <!-- ground -->
+  <rect width="1500" height="500" fill="#1A2235"/>
+  <circle cx="1150" cy="270" r="300" fill="#141A27"/>
+  <circle cx="1150" cy="270" r="300" stroke="#222B40" stroke-width="2"/>
+
+  <!-- left: brand + tagline (kept above y≈310, clear of the profile-photo overlap) -->
+  <g transform="translate(120 96) scale(0.5)">
+    <use href="#mark-circle" fill="#FFFFFF"/>
+    <use href="#mark-leaf" fill="#04D87F"/>
+  </g>
+  <text x="232" y="138" font-family="Quicksand" font-weight="600" font-size="28" fill="#A9B3C7">ollo.bio</text>
+  <text font-family="Quicksand" font-weight="700" font-size="68" letter-spacing="-1" fill="#FFFFFF">
+    <tspan x="116" y="226">one little link,</tspan>
+    <tspan x="116" y="298" fill="#04D87F">organised.</tspan>
+  </text>
+
+  <!-- sparkles (after public/sparkles.png) -->
+  <use href="#star" transform="translate(860 110) scale(22)" fill="#FDD35C"/>
+  <use href="#star" transform="translate(900 150) scale(11)" fill="#8FE3C4"/>
+  <use href="#star" transform="translate(1385 420) scale(16)" fill="#C9A6FF"/>
+
+  <!-- right: mini ollo profile page -->
+  <g transform="translate(905 64) rotate(-4 210 190)">
+    <rect x="0" y="14" width="420" height="380" rx="24" fill="#0B1019" opacity="0.55"/>
+    <g clip-path="url(#card-clip)">
+      <rect width="420" height="380" fill="#141A27"/>
+      <rect width="420" height="72" fill="#22304D"/>
+      <circle cx="372" cy="10" r="64" fill="#04D87F" opacity="0.18"/>
+    </g>
+    <rect x="0.5" y="0.5" width="419" height="379" rx="23.5" stroke="#2A3347"/>
+
+    <circle cx="64" cy="80" r="44" fill="#141A27"/>
+    <use href="#avatar" x="24" y="40" width="80" height="80"/>
+    <text x="120" y="110" font-family="Quicksand" font-weight="700" font-size="26" fill="#FFFFFF">ollo</text>
+    <text x="120" y="134" font-family="Quicksand" font-weight="500" font-size="16" fill="#A9B3C7">ollo.bio/ollo</text>
+
+    <g font-family="Quicksand" font-weight="600" font-size="16" fill="#FFFFFF">
+      <rect x="24" y="152" width="372" height="36" rx="18" fill="#1C2436" stroke="#2A3347"/>
+      <circle cx="46" cy="170" r="6" fill="#04D87F"/>
+      <text x="62" y="176">Posts</text>
+      <path d="M370 164l6 6-6 6" stroke="#A9B3C7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+      <rect x="24" y="196" width="372" height="36" rx="18" fill="#1C2436" stroke="#2A3347"/>
+      <circle cx="46" cy="214" r="6" fill="#FF9F7A"/>
+      <text x="62" y="220">Live</text>
+      <path d="M370 208l6 6-6 6" stroke="#A9B3C7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+      <rect x="24" y="240" width="372" height="36" rx="18" fill="#1C2436" stroke="#2A3347"/>
+      <circle cx="46" cy="258" r="6" fill="#7EC8FF"/>
+      <text x="62" y="264">Spotify</text>
+      <path d="M370 252l6 6-6 6" stroke="#A9B3C7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+
+    <rect x="24" y="290" width="372" height="68" rx="16" fill="#1C2436"/>
+    <use href="#avatar" x="40" y="302" width="28" height="28"/>
+    <text x="78" y="321" font-family="Quicksand" font-weight="700" font-size="15" fill="#FFFFFF">ollo</text>
+    <text x="78" y="344" font-family="Quicksand" font-weight="500" font-size="15" fill="#C9D1E0">Posts, links and socials, all on one page.</text>
+  </g>
+</svg>
