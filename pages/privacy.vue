@@ -21,6 +21,9 @@
     </table>
     <p>Your profile, posts and links are public, because sharing them is what ollo is for. Don't put anything on your page that you don't want the world to see.</p>
 
+    <h2>Showing your profile on ollo.thng.my</h2>
+    <p>ollo.thng.my is a read-only list of ollo pages. You only appear there if you switch on <strong>Show my profile on ollo.thng.my</strong> under Privacy in your dashboard. It's off by default. If you do, it shows your username, display name, bio, avatar and links, based on your consent. Turn it off, or delete your account, and you'll be removed within about 6 hours.</p>
+
     <h2>Who else handles your data</h2>
     <p>We use a small number of services to run ollo. They only process your data to provide their service to us:</p>
     <ul>

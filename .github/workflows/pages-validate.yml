@@ -1,0 +1,25 @@
+name: Pages · check profiles
+
+# Runs on every pull request that touches the read-only site or its profiles.
+# Uses pull_request (not pull_request_target) with read-only permissions, so
+# code from forks never gets a write token.
+on:
+  pull_request:
+    paths:
+      - 'profiles/**'
+      - 'pages-site/**'
+      - '.github/workflows/pages-*.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate profiles and build
+        run: node pages-site/build.mjs

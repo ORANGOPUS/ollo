@@ -1,0 +1,10 @@
+{
+  "username": "ollo",
+  "displayName": "ollo",
+  "bio": "one little link, organised. A free, open-source page for everything you share, run by Orangopus Collective.",
+  "tint": "#04d87f",
+  "links": [
+    { "label": "Open the full app", "url": "https://ollo.bio" },
+    { "label": "Source code on GitHub", "url": "https://github.com/ORANGOPUS/ollo" }
+  ]
+}

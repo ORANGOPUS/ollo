@@ -1,0 +1,59 @@
+name: Pages · deploy
+
+# Builds the read-only site from main (plus opted-in ollo.bio profiles,
+# fetched fresh and never committed) and deploys it with GitHub Pages
+# (Settings → Pages → Source: GitHub Actions). Each deploy replaces the whole
+# site, so deleted profiles disappear from it; they remain in main's git
+# history (see the privacy notice).
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'profiles/**'
+      - 'pages-site/**'
+      - 'app.config.ts'
+      - '.github/workflows/pages-*.yml'
+  workflow_dispatch:
+  # Rebuild regularly so people who switch off "Show my profile on
+  # ollo.thng.my" or delete their account drop off within ~6 hours.
+  schedule:
+    - cron: '17 */6 * * *'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: pages
+        uses: actions/configure-pages@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build
+        env:
+          PAGES_BASE_URL: ${{ steps.pages.outputs.base_url }}
+          PAGES_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          OLLO_API: https://ollo.bio
+        run: node pages-site/build.mjs
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: pages-site/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

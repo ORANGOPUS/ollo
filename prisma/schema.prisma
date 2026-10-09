@@ -370,6 +370,7 @@ model profiles {
   pally          String?
   custom_domain  String?
   social         Json[]    @default([])
+  show_on_pages  Boolean   @default(false)
   layouts        layouts?
   posts          posts[]
   socials        socials[]
