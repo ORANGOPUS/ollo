@@ -216,6 +216,7 @@ function profilePage(p) {
   ${avatarHtml(p, base, 128)}
   <h1>${esc(p.displayName)}</h1>
   <p class="handle">@${esc(p.username)}</p>
+  ${p.source === 'app' ? `<p class="source-badge"><a href="https://ollo.bio/${esc(p.username)}" aria-label="From ollo.bio: open @${esc(p.username)} on ollo.bio">${MARK}<span>From ollo.bio</span></a></p>` : ''}
   ${p.bio ? `<p class="bio">${esc(p.bio)}</p>` : ''}
   ${links}
   <p class="edit">${p.source === 'app'
