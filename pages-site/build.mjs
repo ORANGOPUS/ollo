@@ -18,6 +18,11 @@ const PROFILES = join(ROOT, 'profiles');
 const DIST = join(HERE, 'dist');
 const REPO = 'ORANGOPUS/ollo';
 const CHECK_ONLY = process.argv.includes('--check');
+// When set (the deploy workflow sets it to https://ollo.bio), profiles of
+// ollo.bio users who opted in are fetched from <OLLO_API>/api/pages-profiles.
+// They exist only in dist/ and are never written into the repository.
+const OLLO_API = (process.env.OLLO_API || '').replace(/\/$/, '');
+const MAX_AVATAR = 1024 * 1024;
 
 // Set by the deploy workflow from actions/configure-pages, so the site follows
 // whatever domain is configured in Settings → Pages.
@@ -132,7 +137,8 @@ const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&
 const MARK = `<svg viewBox="0 0 186 111" aria-hidden="true"><path d="M48.07 108.14C74.6183 108.14 96.14 86.6183 96.14 60.07C96.14 33.5217 74.6183 12 48.07 12C21.5217 12 0 33.5217 0 60.07C0 86.6183 21.5217 108.14 48.07 108.14Z" fill="#fff"/><path d="M128.94 23.996C132.952 8.88921 148.347 -0.0759104 163.325 3.97194C178.301 8.01986 187.19 23.5478 183.177 38.6546L175.91 66.008C167.884 96.2213 137.095 114.152 107.14 106.056L128.94 23.996Z" fill="#04D87F"/></svg>`;
 
 function avatarHtml(p, base, size) {
-  const src = p.avatar ? `${base}${p.avatar}` : `${base}assets/avatar.svg`;
+  const avatar = p.avatarOut || p.avatar;
+  const src = avatar ? `${base}${avatar}` : `${base}assets/avatar.svg`;
   return `<span class="avatar" style="--tint:${p.tint};--size:${size}px"><img src="${esc(src)}" width="${size}" height="${size}" alt="" loading="lazy"></span>`;
 }
 
@@ -170,8 +176,7 @@ ${body}
 
 function explorePage(profiles) {
   const base = './';
-  const list = profiles.length
-    ? `<ul class="grid">${profiles.map((p) => `
+  const grid = (list) => `<ul class="grid">${list.map((p) => `
   <li><a class="card" href="${base}${esc(p.username)}/">
     ${avatarHtml(p, base, 56)}
     <span class="card-body">
@@ -180,18 +185,21 @@ function explorePage(profiles) {
       ${p.bio ? `<span class="card-bio">${esc(p.bio)}</span>` : ''}
     </span>
   </a></li>`).join('')}
-</ul>`
-    : `<p class="empty">No profiles yet. Be the first: <a href="${base}add/">add your profile</a>.</p>`;
+</ul>`;
+  const fromRepo = profiles.filter((p) => p.source !== 'app');
+  const fromApp = profiles.filter((p) => p.source === 'app');
   return page({
     title: 'ollo: one little link, organised.',
-    description: 'Public ollo profiles, published from GitHub.',
+    description: 'Public ollo profiles, published from GitHub and ollo.bio.',
     base,
     body: `<section class="hero">
   <h1>one little link, <span class="accent">organised.</span></h1>
-  <p class="lede">Public ollo pages, kept in GitHub and added by pull request. No accounts, no tracking.</p>
+  <p class="lede">Public ollo pages, added by pull request or shared from ollo.bio. No accounts, no tracking.</p>
 </section>
 <h2 id="explore">Explore</h2>
-${list}`,
+${fromRepo.length ? grid(fromRepo) : `<p class="empty">No profiles yet. Be the first: <a href="${base}add/">add your profile</a>.</p>`}
+<h2 id="from-ollo">From ollo.bio</h2>
+${fromApp.length ? grid(fromApp) : `<p class="empty">Nobody has chosen to appear here yet. ollo.bio users can switch on <strong>Show my profile on ollo.thng.my</strong> under Privacy in their <a href="https://ollo.bio/dashboard">dashboard</a>.</p>`}`,
   });
 }
 
@@ -210,7 +218,9 @@ function profilePage(p) {
   <p class="handle">@${esc(p.username)}</p>
   ${p.bio ? `<p class="bio">${esc(p.bio)}</p>` : ''}
   ${links}
-  <p class="edit">Is this you? <a href="https://github.com/${REPO}/edit/main/profiles/${esc(p.username)}.json">Edit this profile on GitHub</a></p>
+  <p class="edit">${p.source === 'app'
+    ? 'From ollo.bio. Is this you? <a href="https://ollo.bio/dashboard">Change it or hide it in your ollo dashboard</a>'
+    : `Is this you? <a href="https://github.com/${REPO}/edit/main/profiles/${esc(p.username)}.json">Edit this profile on GitHub</a>`}</p>
 </article>`,
   });
 }
@@ -260,6 +270,8 @@ function privacyPage(legal) {
     <li><strong>Your profile file:</strong> your username, display name, bio, links and optional avatar. We publish it because you asked us to by opening a pull request. The legal basis is your consent, which you can withdraw by deleting the file.</li>
     <li><strong>Your pull request:</strong> GitHub shows your GitHub username and the content of your pull request publicly. That's part of how GitHub works.</li>
   </ul>
+  <h2>Profiles shared from ollo.bio</h2>
+  <p>If you use ollo.bio and switch on <strong>Show my profile on ollo.thng.my</strong> under Privacy in your dashboard, this site shows your username, display name, bio, avatar and links. The legal basis is your consent. This data is fetched from ollo.bio each time the site is rebuilt (at least every 6 hours) and is <strong>not</strong> stored in the git repository. Switch the setting off or delete your account and you'll be removed at the next rebuild, within about 6 hours.</p>
   <h2>Who else handles it</h2>
   <p><strong>GitHub</strong> stores the repository and hosts this site. GitHub may log your IP address and browser details when you visit, under its own privacy statement. GitHub may process data in the United States.</p>
   <h2>Public, and in git history</h2>
@@ -312,14 +324,97 @@ function notFoundPage() {
   });
 }
 
+// ---------- opted-in profiles from ollo.bio ----------
+
+// Same rules as repo profiles, but lenient: anything invalid is dropped or
+// trimmed rather than failing the build, because users edit these in the app.
+function sanitizeAppProfile(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const username = String(raw.username || '').toLowerCase();
+  if (!USERNAME.test(username) || RESERVED.has(username)) return null;
+  const text = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
+  const displayName = text(raw.displayName, 50) || username;
+  const links = (Array.isArray(raw.links) ? raw.links : [])
+    .map((l) => {
+      let url;
+      try { url = new URL(l && l.url); } catch { return null; }
+      if (url.protocol !== 'https:') return null;
+      return { label: text(l.label, 40) || url.hostname, url: url.href };
+    })
+    .filter(Boolean)
+    .slice(0, 12);
+  let avatarUrl = null;
+  try {
+    const u = new URL(raw.avatar);
+    if (u.protocol === 'https:') avatarUrl = u.href;
+  } catch { /* "avatar.png" default or empty: use the site default */ }
+  return { source: 'app', username, displayName, bio: text(raw.bio, 280), links, tint: tintFor(username), avatarUrl };
+}
+
+function imageExt(buf) {
+  if (buf.length > 8 && buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return 'png';
+  if (buf.length > 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return 'jpg';
+  if (buf.length > 12 && buf.toString('ascii', 0, 4) === 'RIFF' && buf.toString('ascii', 8, 12) === 'WEBP') return 'webp';
+  return null;
+}
+
+async function fetchAppProfiles() {
+  const url = `${OLLO_API}/api/pages-profiles`;
+  let res;
+  try {
+    res = await fetch(url, { headers: { accept: 'application/json' }, signal: AbortSignal.timeout(20000) });
+  } catch (e) {
+    console.error(`✗ Could not reach ${url}: ${e.message}. Stopping so the current site stays up.`);
+    process.exit(1);
+  }
+  if (!res.ok) {
+    console.error(`✗ ${url} answered ${res.status}. Stopping so the current site stays up.`);
+    process.exit(1);
+  }
+  let data;
+  try { data = await res.json(); } catch {
+    console.error(`✗ ${url} did not return JSON. Stopping so the current site stays up.`);
+    process.exit(1);
+  }
+  if (!Array.isArray(data)) {
+    console.error(`✗ ${url} did not return a list. Stopping so the current site stays up.`);
+    process.exit(1);
+  }
+  const out = data.map(sanitizeAppProfile).filter(Boolean);
+  console.log(`✓ ${out.length} opted-in profile(s) from ${OLLO_API} (${data.length - out.length} skipped as invalid)`);
+  return out;
+}
+
+// Download each avatar so visitors never load anything from Supabase.
+async function localizeAvatar(p) {
+  if (!p.avatarUrl) return;
+  try {
+    const res = await fetch(p.avatarUrl, { signal: AbortSignal.timeout(15000) });
+    if (!res.ok) return;
+    const buf = Buffer.from(await res.arrayBuffer());
+    const ext = buf.length <= MAX_AVATAR ? imageExt(buf) : null;
+    if (!ext) return;
+    p.avatarOut = `avatars/app-${p.username}.${ext}`;
+    writeFileSync(join(DIST, p.avatarOut), buf);
+  } catch { /* keep the default avatar */ }
+}
+
 // ---------- main ----------
 
-const profiles = loadProfiles();
-console.log(`\n${profiles.length} profile(s) valid.`);
+const repoProfiles = loadProfiles();
+console.log(`\n${repoProfiles.length} profile(s) valid.`);
 if (CHECK_ONLY) process.exit(0);
+
+// Repo profiles win if a username exists in both places.
+const appProfiles = OLLO_API ? await fetchAppProfiles() : [];
+const taken = new Set(repoProfiles.map((p) => p.username));
+const profiles = [...repoProfiles, ...appProfiles.filter((p) => !taken.has(p.username))]
+  .sort((a, b) => a.displayName.localeCompare(b.displayName));
 
 const legal = readLegal();
 rmSync(DIST, { recursive: true, force: true });
+mkdirSync(join(DIST, 'avatars'), { recursive: true });
+for (const p of profiles) if (p.source === 'app') await localizeAvatar(p);
 const write = (rel, html) => {
   const path = join(DIST, rel);
   mkdirSync(dirname(path), { recursive: true });
@@ -336,7 +431,6 @@ write('.nojekyll', '');
 
 mkdirSync(join(DIST, 'assets'), { recursive: true });
 for (const f of readdirSync(join(HERE, 'assets'))) copyFileSync(join(HERE, 'assets', f), join(DIST, 'assets', f));
-mkdirSync(join(DIST, 'avatars'), { recursive: true });
-for (const p of profiles) if (p.avatar) copyFileSync(join(PROFILES, p.avatar), join(DIST, p.avatar));
+for (const p of profiles) if (p.source !== 'app' && p.avatar) copyFileSync(join(PROFILES, p.avatar), join(DIST, p.avatar));
 
 console.log(`Wrote ${DIST}`);

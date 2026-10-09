@@ -141,6 +141,7 @@
             {{ showUserData ? 'Hide user data' : 'Show user data' }}
           </button>
         </div>
+        <PagesOptIn />
         <pre v-if="showUserData" class="privacy-json">{{ JSON.stringify(user, null, 2) }}</pre>
         <div class="danger-card">
           <div class="danger-title">Delete account</div>

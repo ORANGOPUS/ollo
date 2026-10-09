@@ -1,6 +1,7 @@
 name: Pages · deploy
 
-# Builds the read-only site from main and deploys it with GitHub Pages
+# Builds the read-only site from main (plus opted-in ollo.bio profiles,
+# fetched fresh and never committed) and deploys it with GitHub Pages
 # (Settings → Pages → Source: GitHub Actions). Each deploy replaces the whole
 # site, so deleted profiles disappear from it; they remain in main's git
 # history (see the privacy notice).
@@ -13,6 +14,10 @@ on:
       - 'app.config.ts'
       - '.github/workflows/pages-*.yml'
   workflow_dispatch:
+  # Rebuild regularly so people who switch off "Show my profile on
+  # ollo.thng.my" or delete their account drop off within ~6 hours.
+  schedule:
+    - cron: '17 */6 * * *'
 
 permissions:
   contents: read
@@ -37,6 +42,7 @@ jobs:
         env:
           PAGES_BASE_URL: ${{ steps.pages.outputs.base_url }}
           PAGES_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          OLLO_API: https://ollo.bio
         run: node pages-site/build.mjs
       - uses: actions/upload-pages-artifact@v3
         with:

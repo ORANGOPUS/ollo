@@ -14,6 +14,13 @@ button.
   explains any errors in the log.
 - `.github/workflows/pages-deploy.yml` builds on every merge to `main` and
   deploys `dist/` with GitHub's Pages actions (no `gh-pages` branch).
+- With `OLLO_API` set (the deploy workflow uses `https://ollo.bio`), the
+  build also fetches `/api/pages-profiles`: ollo.bio users who switched on
+  **Show my profile on ollo.thng.my**. Those profiles and their avatars exist
+  only in `dist/`, never in git. Repo profiles win on a username clash. If
+  the API can't be reached, the build fails and the live site stays as it was.
+- The deploy also runs every 6 hours, so opt-outs and deleted accounts drop
+  off within about 6 hours.
 - The privacy contact and controller come from `legal` in `app.config.ts`,
   shared with the full app.
 
@@ -36,11 +43,19 @@ The deploy workflow reads the domain and base path from
 `actions/configure-pages`, so changing the domain in Settings needs no code
 change.
 
+## Database migration (needed once)
+
+Run `supabase/migrations/20261009120000_profiles_show_on_pages.sql` against
+the Supabase database (SQL editor or `supabase db push`). It adds
+`profiles.show_on_pages`, off by default. Until it exists,
+`/api/pages-profiles` fails, and deploys stop without publishing anyone.
+
 ## Run locally
 
 ```sh
 node pages-site/build.mjs          # validate + build into pages-site/dist
 node pages-site/build.mjs --check  # validate only
+OLLO_API=https://ollo.bio node pages-site/build.mjs  # include opted-in ollo.bio profiles
 ```
 
 ## Not included (compared with ollo.bio)

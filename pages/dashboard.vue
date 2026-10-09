@@ -76,6 +76,7 @@
     </button>
     </Tab>
     <Tab title="Privacy">
+      <PagesOptIn />
         <button @click="toggleUser = !toggleUser" class="button red text-white">
       Show user data
     </button>
