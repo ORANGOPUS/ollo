@@ -1,0 +1,44 @@
+name: Pages · deploy
+
+# Builds the read-only site from main and publishes it to the gh-pages branch.
+# gh-pages is force-pushed as a single commit each time, so deleted profiles
+# don't linger in that branch's history (they remain in main's history; see
+# the privacy notice).
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'profiles/**'
+      - 'pages-site/**'
+      - 'app.config.ts'
+      - '.github/workflows/pages-*.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build
+        run: node pages-site/build.mjs
+      - name: Publish to gh-pages
+        working-directory: pages-site/dist
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git init -q -b gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Deploy ${GITHUB_SHA}"
+          git push -f -q "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages

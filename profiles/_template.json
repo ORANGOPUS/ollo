@@ -1,0 +1,9 @@
+{
+  "username": "yourname",
+  "displayName": "Your Name",
+  "bio": "A sentence or two about you. Up to 280 characters.",
+  "tint": "#7ec8ff",
+  "links": [
+    { "label": "My website", "url": "https://example.com" }
+  ]
+}
