@@ -136,7 +136,7 @@
       <div v-else-if="tab === 'Privacy'" class="dash-section">
         <div class="privacy-card">
           <div class="privacy-title">Your data</div>
-          <div class="privacy-desc">We're privacy-focused and don't share your data with third parties.</div>
+          <div class="privacy-desc">We never sell your data or show ads. A few services help run ollo; see the <NuxtLink to="/privacy">privacy notice</NuxtLink>.</div>
           <button class="privacy-btn" @click="showUserData = !showUserData">
             {{ showUserData ? 'Hide user data' : 'Show user data' }}
           </button>
@@ -145,7 +145,10 @@
         <div class="danger-card">
           <div class="danger-title">Delete account</div>
           <div class="privacy-desc">This deletes your user and all associated data. It cannot be undone.</div>
-          <button class="danger-btn" @click="deleteData">Delete user &amp; data</button>
+          <button class="danger-btn" :disabled="deleting" @click="deleteData">
+            {{ deleting ? 'Deleting…' : 'Delete user & data' }}
+          </button>
+          <div v-if="deleteError" class="privacy-desc" role="alert" style="color:#ff9f7a">{{ deleteError }}</div>
         </div>
       </div>
     </div>
@@ -220,8 +223,10 @@ function handleSpotify() {
   window.location.href = authUrl;
 }
 
+const { deleting, deleteError, deleteAccount } = useDeleteAccount();
+
 async function deleteData() {
-  await supabase.rpc('delete_user');
+  if (await deleteAccount()) navigateTo('/app/login');
 }
 
 async function updateField(field: string, value: string) {

@@ -15,6 +15,10 @@
       <button class="login-discord" @click="signIn">Continue with Discord</button>
       <button class="login-claim" @click="signIn">Claim a username</button>
       <div class="login-foot">Open-source and 100% free. No paywalls, ever.</div>
+      <div class="login-legal">
+        By continuing you agree to our <NuxtLink to="/terms">Terms</NuxtLink>
+        and <NuxtLink to="/privacy">Privacy notice</NuxtLink>.
+      </div>
     </div>
   </div>
 </template>
@@ -126,6 +130,18 @@ async function signIn() {
 .login-claim {
   background: #fff;
   color: #212121;
+}
+
+.login-legal {
+  font: 500 13px/1.5 Quicksand, sans-serif;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  padding: 0 20px;
+}
+
+.login-legal a {
+  color: #04d87f;
+  text-decoration: underline;
 }
 
 .login-foot {

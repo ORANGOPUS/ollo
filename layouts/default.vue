@@ -4,6 +4,7 @@
       <div class="margin">
         <slot/>
       </div>
+      <footer class="site-footer"><LegalLinks /></footer>
     </div>
   </template>
   
@@ -20,3 +21,7 @@
     return data
   })
   </script>
+
+<style scoped>
+.site-footer { padding: 32px 16px 48px; }
+</style>

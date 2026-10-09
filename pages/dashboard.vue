@@ -87,10 +87,11 @@
     <br/>
     <br/>
     <div>
-      <button @click="deleteData" class="button red text-white">
-      Delete user & user data
+      <button @click="deleteData" :disabled="deleting" class="button red text-white">
+      {{ deleting ? 'Deleting…' : 'Delete user & user data' }}
     </button>
-    <p>Warning: This will delete your user & user data.</p>
+    <p>Warning: This permanently deletes your profile, posts, likes, links and uploads.</p>
+    <p v-if="deleteError" role="alert" style="color:#ff9f7a">{{ deleteError }}</p>
     </div>
     </Tab>
   </TabsWrapper>
@@ -160,8 +161,10 @@ const handleSpotify = () => {
   window.location.href = authUrl;
 };
 
+const { deleting, deleteError, deleteAccount } = useDeleteAccount();
+
 const deleteData = async () => {
-  await supabase.rpc('delete_user');
+  if (await deleteAccount()) navigateTo('/');
 }
 
 const handleSubmit = async () => {
