@@ -1,9 +1,9 @@
 name: Pages · deploy
 
-# Builds the read-only site from main and publishes it to the gh-pages branch.
-# gh-pages is force-pushed as a single commit each time, so deleted profiles
-# don't linger in that branch's history (they remain in main's history; see
-# the privacy notice).
+# Builds the read-only site from main and deploys it with GitHub Pages
+# (Settings → Pages → Source: GitHub Actions). Each deploy replaces the whole
+# site, so deleted profiles disappear from it; they remain in main's git
+# history (see the privacy notice).
 on:
   push:
     branches: [main]
@@ -15,30 +15,39 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
 
 concurrency:
-  group: pages-deploy
-  cancel-in-progress: true
+  group: pages
+  cancel-in-progress: false
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - id: pages
+        uses: actions/configure-pages@v5
       - uses: actions/setup-node@v4
         with:
           node-version: 22
       - name: Build
-        run: node pages-site/build.mjs
-      - name: Publish to gh-pages
-        working-directory: pages-site/dist
         env:
-          TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git init -q -b gh-pages
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -q -m "Deploy ${GITHUB_SHA}"
-          git push -f -q "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
+          PAGES_BASE_URL: ${{ steps.pages.outputs.base_url }}
+          PAGES_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+        run: node pages-site/build.mjs
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: pages-site/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

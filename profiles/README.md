@@ -1,7 +1,7 @@
 # Profiles for the read-only ollo
 
 Every file in this folder is one public profile on the GitHub Pages version of
-ollo (`https://orangopus.github.io/ollo/`). Files starting with `_` are ignored.
+ollo (`https://ollo.thng.my/`). Files starting with `_` are ignored.
 
 **Everything you put here is public**, and stays in this repository's git
 history even after you delete it. Only add what you're happy for anyone to see.
@@ -14,7 +14,7 @@ history even after you delete it. Only add what you're happy for anyone to see.
 2. Edit the fields (rules below) and open a pull request.
 3. A check runs on your pull request and tells you if anything needs fixing.
 4. Once a maintainer merges it, your page appears at
-   `https://orangopus.github.io/ollo/<username>/` within a few minutes.
+   `https://ollo.thng.my/<username>/` within a few minutes.
 
 ## Fields
 

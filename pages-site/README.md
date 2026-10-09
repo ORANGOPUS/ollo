@@ -13,17 +13,28 @@ button.
 - `.github/workflows/pages-validate.yml` runs the build on pull requests and
   explains any errors in the log.
 - `.github/workflows/pages-deploy.yml` builds on every merge to `main` and
-  force-pushes `dist/` to `gh-pages`.
+  deploys `dist/` with GitHub's Pages actions (no `gh-pages` branch).
 - The privacy contact and controller come from `legal` in `app.config.ts`,
   shared with the full app.
 
-## One-time setup
+## Domain and setup
 
-1. Merge this to `main`. The first deploy creates the `gh-pages` branch.
-2. Go to **Settings → Pages**, set **Source: Deploy from a branch**, **Branch:
-   `gh-pages` / root**, then save.
-3. The site appears at `https://orangopus.github.io/ollo/`. If the repo is
-   renamed, update the `/ollo/` paths in `404.html` (in `build.mjs`).
+The site is served at **https://ollo.thng.my/**.
+
+1. **Settings → Pages:** Source is **GitHub Actions** and the custom domain is
+   `ollo.thng.my`. Both are already set.
+2. **DNS (Cloudflare, zone `thng.my`):** add a `CNAME` record with name `ollo`
+   and target `orangopus.github.io`, with the proxy **off** (DNS only, grey
+   cloud), so GitHub can issue the HTTPS certificate.
+3. Once GitHub shows the certificate as issued, tick **Enforce HTTPS** in
+   Settings → Pages.
+4. Recommended: verify `thng.my` for the ORANGOPUS organisation
+   (**Org settings → Pages → Add a domain**, then add the TXT record it gives
+   you). This stops other GitHub accounts from claiming `*.thng.my`.
+
+The deploy workflow reads the domain and base path from
+`actions/configure-pages`, so changing the domain in Settings needs no code
+change.
 
 ## Run locally
 

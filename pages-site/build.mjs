@@ -5,7 +5,8 @@
 //   node pages-site/build.mjs --check   validate only (used on pull requests)
 //
 // Node built-ins only, so CI needs no npm install. Every URL in the output is
-// relative, so the site works under https://orangopus.github.io/ollo/.
+// relative, so the site works at a domain root (https://ollo.thng.my/) or under
+// a project path (https://orangopus.github.io/ollo/).
 
 import { readFileSync, readdirSync, existsSync, statSync, mkdirSync, rmSync, writeFileSync, copyFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -17,6 +18,12 @@ const PROFILES = join(ROOT, 'profiles');
 const DIST = join(HERE, 'dist');
 const REPO = 'ORANGOPUS/ollo';
 const CHECK_ONLY = process.argv.includes('--check');
+
+// Set by the deploy workflow from actions/configure-pages, so the site follows
+// whatever domain is configured in Settings → Pages.
+const SITE_URL = (process.env.PAGES_BASE_URL || 'https://ollo.thng.my').replace(/\/$/, '');
+const SITE_PATH = (process.env.PAGES_BASE_PATH || '').replace(/\/$/, '') + '/';
+const SITE_HOST = SITE_URL.replace(/^https?:\/\//, '');
 
 // Same palette and hash as composables/useAvatarTint.ts
 const TINTS = ['#04d87f', '#fdd35c', '#7ec8ff', '#ff9f7a', '#c9a6ff', '#8fe3c4'];
@@ -223,7 +230,7 @@ function addPage() {
     <li><div><strong>Open the template</strong>GitHub opens an editor with the template filled in. Rename <code>yourname.json</code> to your username.</div></li>
     <li><div><strong>Fill it in</strong>Add your name, a short bio and up to 12 links. Links must start with <code>https://</code>.</div></li>
     <li><div><strong>Propose the change</strong>GitHub creates a pull request. An automatic check tells you if anything needs fixing.</div></li>
-    <li><div><strong>Go live</strong>Once a maintainer merges it, your page appears at <code>orangopus.github.io/ollo/&lt;username&gt;/</code> within a few minutes.</div></li>
+    <li><div><strong>Go live</strong>Once a maintainer merges it, your page appears at <code>${esc(SITE_HOST)}/&lt;username&gt;/</code> within a few minutes.</div></li>
   </ol>
   <p><a class="button" href="${esc(newFile)}">Open the template on GitHub</a></p>
   <p>All the rules are in <a href="https://github.com/${REPO}/blob/main/profiles/README.md">profiles/README.md</a>.</p>
@@ -244,7 +251,7 @@ function privacyPage(legal) {
     base: '../',
     body: `<div class="prose">
   <h1>Privacy notice</h1>
-  <p class="updated">${legal.lastUpdated ? `Last updated ${esc(legal.lastUpdated)} · ` : ''}This notice covers orangopus.github.io/ollo. The full app at ollo.bio has <a href="https://ollo.bio/privacy">its own notice</a>.</p>
+  <p class="updated">${legal.lastUpdated ? `Last updated ${esc(legal.lastUpdated)} · ` : ''}This notice covers ${esc(SITE_HOST)}. The full app at ollo.bio has <a href="https://ollo.bio/privacy">its own notice</a>.</p>
   <div class="callout"><p><strong>The short version:</strong> this site has no accounts, no cookies and no tracking. The only personal data here is what people choose to put in their public profile file on GitHub.</p></div>
   <h2>Who we are</h2>
   <p>${esc(legal.controller)} runs ollo and is the controller of personal data on this site under the UK GDPR and the EU GDPR. Contact: ${contact(legal)}.</p>
@@ -291,16 +298,16 @@ function termsPage(legal) {
 }
 
 function notFoundPage() {
-  // GitHub Pages serves 404.html from the site root for any missing path, so
-  // assets use absolute-from-repo links here.
+  // GitHub Pages serves 404.html for any missing path at any depth, so links
+  // here are absolute from the site root.
   return page({
     title: 'Page not found · ollo',
     description: 'This page does not exist.',
-    base: '/ollo/',
+    base: SITE_PATH,
     body: `<div class="prose">
   <h1>Nothing here</h1>
   <p class="lede">There's no profile or page at this address. It may have been renamed or removed.</p>
-  <p><a class="button" href="/ollo/">Explore profiles</a></p>
+  <p><a class="button" href="${SITE_PATH}">Explore profiles</a></p>
 </div>`,
   });
 }
